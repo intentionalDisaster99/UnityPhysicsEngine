@@ -56,8 +56,9 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "2D Testing.sln",
+    "dotnet.defaultSolution": "Preliminary2DEngine.sln",
     "cSpell.words": [
+        "Coeff",
         "Locationalized"
     ]
 }

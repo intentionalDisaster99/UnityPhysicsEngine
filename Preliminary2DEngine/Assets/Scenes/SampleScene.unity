@@ -226,7 +226,7 @@ GameObject:
   - component: {fileID: 953256975}
   - component: {fileID: 953256974}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: Main Script
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -244,7 +244,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d80c50a84dfa94f9e1996012e89f34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfParticles: 100
+  numberOfParticles: 750
   particlePicture: {fileID: 1747667411}
 --- !u!212 &953256975
 SpriteRenderer:
