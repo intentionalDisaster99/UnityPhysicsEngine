@@ -8,6 +8,9 @@ I hope to end up making this engine able to simulate the movement of the solar s
 At the moment, it is merely in the beginning stages of development, so it is only 2D though I have plans to make it 3D, among other things
 
 ## Future plans
+- [ ] Multithreading
+- [ ] Charges of particles
+- [ ] Rescaling of the background
 - [ ] 3D
 - [ ] Being able to change from General Relativity to Newtonian gravity
 - [ ] Different Shapes (other than circles)
