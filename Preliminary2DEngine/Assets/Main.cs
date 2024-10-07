@@ -21,7 +21,8 @@ public class Main : MonoBehaviour {
 
     // TODO Change this to a List instead of an array
     // The list of particles to use
-    private particle[] particles;
+    // private particle[] particles; // Left in commnents in case I want to change back later for speed
+    private List<particle> particles;
 
 
     // A bool to make sure the mouse isn't held down
@@ -33,13 +34,15 @@ public class Main : MonoBehaviour {
     void Start() {
 
         // Making a list of particles to use
-        particles = new particle[numberOfParticles];
+        // particles = new particle[numberOfParticles];
+        particles = new List<particle>(numberOfParticles);
 
         // Looping to instantiate all of the particles
         for (int i = 0; i < numberOfParticles; i++) {
 
             // Making another circle and using its transform for our particle
-            particles[i] = new particle(Instantiate(particlePicture).transform, 0.1f, 0.1f, new Vector2(Random.Range(-9f, 9f), Random.Range(-4f, 4f)), new Vector2(Random.Range(-10f, 10f), Random.Range(-10f, 10f)));
+            // particles[i] = new particle(Instantiate(particlePicture).transform, 0.1f, 0.1f, new Vector2(Random.Range(-9f, 9f), Random.Range(-4f, 4f)), new Vector2(Random.Range(-10f, 10f), Random.Range(-10f, 10f)));
+            particles.Add(new particle(Instantiate(particlePicture).transform, 0.1f, 0.1f, new Vector2(Random.Range(-9f, 9f), Random.Range(-4f, 4f)), new Vector2(Random.Range(-10f, 10f), Random.Range(-10f, 10f))));
 
             // Giving each a different force
             particles[i].force(new Vector2(i * 2, i));
@@ -55,7 +58,7 @@ public class Main : MonoBehaviour {
     void Update() {
 
         // Updating the location of each one in the particles thing
-        for (int i = 0; i < particles.Length; i++) {
+        for (int i = 0; i < particles.Count; i++) {
             particles[i].update();
         }
 
@@ -64,7 +67,7 @@ public class Main : MonoBehaviour {
         particle.fixCollisions(particles);
 
         // Adding gravity
-        for (int i = 0; i < particles.Length; i++) {
+        for (int i = 0; i < particles.Count; i++) {
             particle.addGravity(particles[i], particles);
         }
 
@@ -96,32 +99,23 @@ public class Main : MonoBehaviour {
         numberOfParticles = Mathf.Max(numberOfParticles, 0);
         
         // Checking to see if we need to get rid of some circles or add more
-        if (numberOfParticles > particles.Length) {
-
-            // The new array
-            particle[] newParticles = new particle[numberOfParticles];
-
-            // Duplicating the particles array into a bigger array
-            System.Array.Copy(particles, newParticles, particles.Length);
+        if (numberOfParticles > particles.Count) {
 
             // Looping to add particles
-            for (int i = particles.Length; i < newParticles.Length; i++) {
+            for (int i = particles.Count; i < numberOfParticles; i++) {
 
                 // Making another circle and using its transform for our particle
-                newParticles[i] = new particle(Instantiate(particlePicture).transform, 0.1f, 0.1f, new Vector2(Random.Range(-9f, 9f), Random.Range(-4f, 4f)), new Vector2(Random.Range(-10f, 10f), Random.Range(-10f, 10f)));
+                particles.Add(new particle(Instantiate(particlePicture).transform, 0.1f, 0.1f, new Vector2(Random.Range(-9f, 9f), Random.Range(-4f, 4f)), new Vector2(Random.Range(-10f, 10f), Random.Range(-10f, 10f))));
 
                 // Giving each a different force
-                newParticles[i].force(new Vector2(i * 2, i));
+                particles[i].force(new Vector2(i * 2, i));
 
                 // Making it so that each collision isn't elastic   
-                newParticles[i].restitution = 0.75f;
+                particles[i].restitution = 0.75f;
 
             }
 
-            // Resetting the particles to particles
-            particles = newParticles;
-
-        } else if (numberOfParticles < particles.Length) {
+        } else if (numberOfParticles < particles.Count) {
 
             Debug.Log("Removing...");
 
@@ -129,29 +123,19 @@ public class Main : MonoBehaviour {
             int newLength = numberOfParticles;
 
             // Destroying the extra particles
-            for (int i = particles.Length - 1; i > newLength; i--) {
+            for (int i = particles.Count - 1; i > newLength; i--) {
                 Debug.Log("Looping...");
 
                 // Check for null before trying to destroy
                 if (particles[i] != null && particles[i].shownTransform != null && particles[i].shownTransform.parent != null) {
-                Debug.Log($"Destroying particle at index {i}: {particles[i].shownTransform.parent.gameObject.name}");
-                Destroy(particles[i].shownTransform.parent.gameObject);
-                particles[i] = null;
+                    Debug.Log($"Destroying particle at index {i}: {particles[i].shownTransform.parent.gameObject.name}");
+                    Destroy(particles[i].shownTransform.parent.gameObject);
+                    particles.RemoveAt(i);
                 }
 
             }
 
-            // Create a new smaller array to hold the remaining particles
-            particle[] newParticles = new particle[newLength];
-
-            // Duplicating the particles array into a smaller array
-            System.Array.Copy(particles, newParticles, newLength);
-
-            // Saving the new array
-            particles = newParticles;
-
         }
-
 
     }
 }
@@ -341,13 +325,13 @@ public class particle {
 
     // ! Deprecated! 
     // Collision Detection 
-    public static void fixCollisions(particle[] particles){
+    public static void fixCollisions(List<particle> particles){
 
         // Looping for all of them to see which ones are close
-        for (int i = 0; i < particles.Length; i++) {
+        for (int i = 0; i < particles.Count; i++) {
 
             // Start j from i + 1 to avoid redundant checks
-            for (int j = i + 1; j < particles.Length; j++) {
+            for (int j = i + 1; j < particles.Count; j++) {
 
                 // Making sure that it doesn't try to check with itself
                 if (i == j) continue;
@@ -404,13 +388,13 @@ public class particle {
     } 
 
     // Gravity :D
-    public static void addGravity(particle focus, particle[] particles) {
+    public static void addGravity(particle focus, List<particle> particles) {
 
         // Summing the forces 
         Vector2 f = Vector2.zero;
 
         // Looping through each of the other particles and adding their gravity to the focus
-        for (int i = 0; i < particles.Length; i++) {
+        for (int i = 0; i < particles.Count; i++) {
 
             // The force of gravity due to each one is 
             // F = G * M1 * M2 / r^2
