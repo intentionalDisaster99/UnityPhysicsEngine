@@ -1,0 +1,3 @@
+# Ignore testing shader and compute shader files
+TestingShader*
+ComputeShader*

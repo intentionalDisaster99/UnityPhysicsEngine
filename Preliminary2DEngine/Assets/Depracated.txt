@@ -1,0 +1,174 @@
+I just couldn't bring myself to delete hard work so here it is 
+
+// The updated collision fixer 
+    public static void advancedCollisionFix(List<Particle> particles) {
+
+        // First, I need to find every single colliding pair
+
+        // The pairs
+        List<(Particle particle1, Particle particle2)> collidingPairs = new List<(Particle particle1, Particle particle2)>();
+
+        // Finding the pairs
+        for (int i = 0; i < particles.Count; i++) {
+            for (int j = i + 1; j < particles.Count; j++) {
+
+                // Checking whether these two actually are in contact
+                if ((particles[i].shownTransform.position - particles[j].shownTransform.position).sqrMagnitude < Mathf.Pow(particles[i].radius + particles[j].radius, 2)) {
+                    collidingPairs.Add((particles[i], particles[j]));
+                }
+
+            }
+
+        }
+
+        // Returning early if none of them are touching
+        if (collidingPairs.Count == 0) return;
+
+        // ! I might end up implementing a toggle in the particles. That way I can set it from one position to the next and just flip them all when I have completed the function
+
+
+        // First thing we have to do is check to see if each one is in contact with any other particles.
+        // That would mean that we have to change the 'mass' of that particle to be divided by the number of particles
+        // that it is touching because it will be able to do less to the other particles
+        // At least, that's what it seemed to say in the paper I read ¯\_(ツ)_/¯
+
+
+        // First, to adjust the mass
+        for (int i = 0; i < collidingPairs.Count; i++) {
+
+            // This is the new placeholder mass of this particles
+            float mass1 = 0;
+            float mass2 = 0;
+
+            // We have to find the total mass of the other particles that we are using, so we need to loop all of the
+            // others too
+            for (int j = 0; j < collidingPairs.Count; j++) {
+
+                // Skipping this one because we have already accounted for it
+                if (j == i) continue;
+
+                // Adding the mass of particles that are touching to each mass
+                if (collidingPairs[j].particle1 == collidingPairs[i].particle1) {
+                    mass1 += collidingPairs[j].particle2.mass;
+                } else if (collidingPairs[j].particle1 == collidingPairs[i].particle2){
+                    mass2 += collidingPairs[j].particle1.mass;
+                } else if (collidingPairs[j].particle2 == collidingPairs[i].particle1) {
+                    mass1 += collidingPairs[j].particle1.mass;
+                } else if (collidingPairs[j].particle1 == collidingPairs[i].particle2){
+                    mass2 += collidingPairs[j].particle1.mass;
+                }
+
+            }
+
+            // We have to make it the first mass divided by the other masses it's touching so
+            if (mass1 != 0 ) {
+                collidingPairs[i].particle1.placeHolderMass = collidingPairs[i].particle1.placeHolderMass / mass1;
+            } else {collidingPairs[i].particle1.placeHolderMass = collidingPairs[i].particle1.mass;}
+            if (mass2 != 0) {
+                collidingPairs[i].particle2.placeHolderMass = collidingPairs[i].particle2.placeHolderMass / mass2;
+            } else {
+                collidingPairs[i].particle2.placeHolderMass = collidingPairs[i].particle2.mass;
+            }
+
+        }
+
+        // Now that we have the placeholder masses, we can do things to it
+        for (int i = 0; i < collidingPairs.Count; i++) {
+
+            // Using reference variable to make it easier
+            Particle particle1 = collidingPairs[i].particle1;
+            Particle particle2 = collidingPairs[i].particle2;
+
+            // Finding the normal
+            Vector3 normal3 = particle1.shownTransform.position - particle2.shownTransform.position;
+            Vector2 normal = new Vector2(normal3.x, normal3.y).normalized;
+
+            // Getting the relative velocity
+            Vector2 relativeVelocity = particle1.velocity - particle2.velocity;
+
+            // Skipping it if they are moving apart
+            if (Vector2.Dot(relativeVelocity, normal) >= 0) continue;
+
+            // Finding the coefficient of restitution that we will use
+            float restitution = Mathf.Min(particle1.restitution, particle2.restitution);
+
+            // Finding the impulse to see how much we need to adjust the velocity and position
+            float impulseScalar = -(1 + restitution) * Vector2.Dot(relativeVelocity, normal);
+                    impulseScalar /= (1 / particle1.placeHolderMass + 1 / particle2.placeHolderMass);
+
+            // Applying the impulse to the particles
+            Vector2 impulse = impulseScalar * normal;
+            particle1.placeHolderVelocity += impulse / particle1.placeHolderMass;
+            particle2.placeHolderVelocity -= impulse / particle2.placeHolderMass;
+
+            // Getting the adjustment radius 
+            // TODO again, get rid of this sqrt (probably use a heuristic)
+            float overlapDepth = particle1.radius + particle2.radius - (particle1.shownTransform.position + particle2.shownTransform.position).magnitude;    
+
+            // Finding the correction vector, accounting for mass to make it smoother
+            Vector2 correction = normal * Mathf.Max(overlapDepth, 0) / (particle1.placeHolderMass + particle2.placeHolderMass);  
+
+            // Moving the first one
+            particle1.placeHolderPosition += new Vector2(correction.x, correction.y) * particle2.placeHolderMass;
+
+            // Moving the second one
+            particle2.placeHolderPosition -= new Vector2(correction.x, correction.y) * particle1.placeHolderMass;
+
+        }
+
+        // Updating the different parts of the particles so that they are no longer placeholders
+        for (int i = 0; i < particles.Count; i++) {
+
+            particles[i].updateToPlaceholders();
+
+        }
+
+    }
+
+
+    // This is me trying again to update the fixCollisions function
+    // I am literally reading through a paper here:
+    // https://ocw.mit.edu/courses/22-105-electromagnetic-interactions-fall-2005/74c72356f2f4f5f00f6b00e8c2c2da99_chap6.pdf
+    // And trying to get it to work
+    public static void thirdFixCollisions(List<Particle> particles) {
+
+        // At first, everything will be elastic because of course we want it to be simple
+        
+        // That means that the center of mass will have to have a constant velocity
+        // So why don't I find that
+
+        // Just trying a quick this that I saw on YouTube
+
+        // Looping for all of them to see which ones are close
+        for (int i = 0; i < particles.Count; i++) {
+
+            // Start j from i + 1 to avoid redundant checks
+            for (int j = i + 1; j < particles.Count; j++) {
+
+                // Making sure that it doesn't try to check with itself
+                if (i == j) continue;
+            
+                // We don't want to do square root because it is very slow, so we are 
+                // going to check to see if the distance between them is less than the
+                // (2 * radius) squared 
+                float distSquared = (particles[i].shownTransform.position - particles[j].shownTransform.position).sqrMagnitude;
+
+                if (distSquared <= (particles[i].radius + particles[j].radius) * (particles[i].radius + particles[j].radius)) {
+
+                    // Here is where we do things with the collision fixing will happen
+                    Particle.fixCollision(particles[i], particles[j]);
+
+                }
+
+            }
+
+        }
+
+        // Now that everything is done, here we will be implementing every particle's placeholder
+        for (int i = 0; i < particles.Count; i++) {
+            particles[i].updateToPlaceholders();
+        }
+
+    
+    } 
+    

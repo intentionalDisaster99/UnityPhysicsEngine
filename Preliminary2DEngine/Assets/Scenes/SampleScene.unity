@@ -244,8 +244,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d80c50a84dfa94f9e1996012e89f34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfParticles: 750
-  particlePicture: {fileID: 1747667411}
+  numberOfParticles: 100
+  ParticlePicture: {fileID: 1747667411}
 --- !u!212 &953256975
 SpriteRenderer:
   m_ObjectHideFlags: 0
