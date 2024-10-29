@@ -1,4 +1,4 @@
-# UnityPhysicsEngine# Unity Physics Engine
+# UnityPhysicsEngine
 
 ## Why?
 I personally love physics and computer science, so I decided to merge the two of them in this project. It is going to also serve as my honorization project for CS 121 at UAH, though feel free to use it and mess around with it.
