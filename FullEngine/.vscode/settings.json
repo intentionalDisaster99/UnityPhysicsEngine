@@ -51,5 +51,8 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "2D Preliminary Project.sln"
+    "dotnet.defaultSolution": "FullEngine.sln",
+    "cSpell.words": [
+        "defaultify"
+    ]
 }

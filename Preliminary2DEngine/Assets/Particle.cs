@@ -232,8 +232,6 @@ public class Particle {
 
     }
 
-    // ! WHAT IF I ADJUSTED THIS TO JUST ADD FORCE TO THE PARTICLES SO THAT THE GRAVITY IS COUNTERACTED
-
     // TODO I need to fix this a bit to ensure that it accounts for multiple different collisions at the same time
     // Collision Detection 
     public static void fixCollisions(List<Particle> particles){
