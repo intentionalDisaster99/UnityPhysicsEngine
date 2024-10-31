@@ -18,7 +18,7 @@ public class Grid {
 
     // The list that I am going to use for each cell
     private List<Particle>[,,] grid;
-    
+
     // The physical sizes of the grid (like the length from top to bottom, left to right, and back to front)
     private double3 physicalSize;
 
@@ -41,9 +41,9 @@ public class Grid {
 
         this.physicalSize = physicalSize;
         this.numberOfCells = cellNumber;
-        
+
         // Setting the offset to the default: zero
-        this.offset = new double3(0, 0, 0); 
+        this.offset = new double3(0, 0, 0);
 
         // Setting up the list of particles
         this.grid = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
@@ -63,7 +63,7 @@ public class Grid {
 
         this.physicalSize = physicalSize;
         this.numberOfCells = cellNumber;
-        this.offset = offset; 
+        this.offset = offset;
 
         // Setting up the list of particles
         this.grid = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
@@ -99,25 +99,11 @@ public class Grid {
         // Adding this particle to the running list 
         this.runningList.AddLast(particle);
 
-    } 
+    }
 
     // A method that will check to see if the particles are in the right place
     // TODO With the new linked list, I can more quickly just clear the grid and then add in the ones I have saved in the running list
     public void fixLocations() {
-
-
-
-        // // Creating a new list where we can put everything in its right place
-        // List<Particle>[,,] temp = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
-
-        // // Making sure there are no null lists
-        // for (int x = 0; x < this.numberOfCells.x; x++) {
-        //     for (int y = 0; y < this.numberOfCells.y; y++) {
-        //         for (int z = 0; z < this.numberOfCells.z; z++) {
-        //             temp[x, y, z] = new List<Particle>();
-        //         }
-        //     }
-        // }
 
         // Clearing the list 
         this.grid = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
@@ -138,12 +124,11 @@ public class Grid {
         }
 
         // Pre-allocating the space for the indices
-        Vector3Int indices = new Vector3Int(0, 0, 0);
+        Vector3Int indices = new(0, 0, 0);
 
         // Looping for every particle in the array
         var node = runningList.First;
-        while (node != null)
-        {
+        while (node != null) {
 
             // Getting the indices of the particle
             indices = this.getParticleIndex(node.Value);
@@ -171,11 +156,9 @@ public class Grid {
         z = math.clamp(z, 0, this.numberOfCells.z - 1);
 
         return new Vector3Int(x, y, z);
-
     }
 
-
-    public void fixCollisions(){
+    public void fixCollisions() {
 
         // Looping through all of the cells
         // ! Here is where we should add multi-threading so that we can check different cells at the same time
@@ -189,7 +172,7 @@ public class Grid {
                     // Looping through the particles in the cell
                     for (int i = 0; i < this.grid[x, y, z].Count; i++) {
 
-                        for (int j = i+1; j < this.grid[x, y, z].Count; j++) {  
+                        for (int j = i + 1; j < this.grid[x, y, z].Count; j++) {
 
                             // This is a backup to make sure that it doesn't try to collide with itself
                             // We shouldn't need it tho because of the way that I am looping through
@@ -198,7 +181,7 @@ public class Grid {
                             // The particles that we are using
                             Particle one = this.grid[x, y, z][i];
                             Particle two = this.grid[x, y, z][j];
-                        
+
                             // We don't want to do square root because it is very slow, so we are 
                             // going to check to see if the distance between them is less than the
                             // (2 * radius) squared 
@@ -215,7 +198,7 @@ public class Grid {
                                 // Fixing the positions of the particles so that they aren't clashing anymore
                                 Grid.fixPositionForCollision(one, two, dist);
 
-                            
+
                             }
 
                         }
@@ -241,7 +224,7 @@ public class Grid {
         }
 
     }
-    
+
     //-------------------------------Private Methods---------------------------------
 
     // Helper function for fixing the collisions
@@ -274,12 +257,12 @@ public class Grid {
         // add as an instance variable
         // Finding out how much we need to move it 
         double overlapDepth = one.getRadius() + two.getRadius() - dist;
-        double3 springForce = 1/(1/(one.getSpringConstant()) + 1/(two.getSpringConstant())) * overlapDepth * normal * 0.98f;
+        double3 springForce = 1 / (1 / (one.getSpringConstant()) + 1 / (two.getSpringConstant())) * overlapDepth * normal * 0.98f;
         // (it is the same for the second one, just negative)
 
         // Let's just try to apply this force for now. I might need to end up really increasing the spring constant for each tho
         one.force(springForce);
-        two.force(-springForce);         
+        two.force(-springForce);
 
 
     }
@@ -301,16 +284,13 @@ public class Grid {
         While I could directly update the position, that can cause some jittering and stuff
         so I am going to lerp to the new position
         */
-    
+
         // Moving the first one
         one.transform.position += (correction * two.getMass()).ToVector3();
-        
+
         // Moving the second one
         two.transform.position -= (correction * one.getMass()).ToVector3();
 
     }
 
-
-
-
-} 
+}
