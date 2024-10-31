@@ -105,43 +105,55 @@ public class Grid {
     // TODO With the new linked list, I can more quickly just clear the grid and then add in the ones I have saved in the running list
     public void fixLocations() {
 
-        // Creating a new list where we can put everything in its right place
-        List<Particle>[,,] temp = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
 
-        // Making sure there are no null lists
+
+        // // Creating a new list where we can put everything in its right place
+        // List<Particle>[,,] temp = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
+
+        // // Making sure there are no null lists
+        // for (int x = 0; x < this.numberOfCells.x; x++) {
+        //     for (int y = 0; y < this.numberOfCells.y; y++) {
+        //         for (int z = 0; z < this.numberOfCells.z; z++) {
+        //             temp[x, y, z] = new List<Particle>();
+        //         }
+        //     }
+        // }
+
+        // Clearing the list 
+        this.grid = new List<Particle>[this.numberOfCells.x, this.numberOfCells.y, this.numberOfCells.z];
+
+        // Initializing the new grid lists 
         for (int x = 0; x < this.numberOfCells.x; x++) {
+
             for (int y = 0; y < this.numberOfCells.y; y++) {
+
                 for (int z = 0; z < this.numberOfCells.z; z++) {
-                    temp[x, y, z] = new List<Particle>();
+
+                    this.grid[x, y, z] = new List<Particle>();
+
                 }
+
             }
+
         }
 
         // Pre-allocating the space for the indices
         Vector3Int indices = new Vector3Int(0, 0, 0);
 
-        // Looping through every cell
-        for (int i = 0; i < this.numberOfCells.x; i++) {
-            for (int j = 0; j < this.numberOfCells.y; j++) {
-                for (int k = 0; k < this.numberOfCells.z; k++ ) {
+        // Looping for every particle in the array
+        var node = runningList.First;
+        while (node != null)
+        {
 
-                    // Looping through every particle in the cell 
-                    for (int t = 0; t < this.grid[i, j, k].Count; t++) {
+            // Getting the indices of the particle
+            indices = this.getParticleIndex(node.Value);
 
-                        // Getting the position of this particle
-                        indices = this.getParticleIndex(this.grid[i, j, k][t]);
+            // Pushing that particle into the right place
+            this.grid[indices.x, indices.y, indices.z].Add(node.Value);
 
-                        // Adding this particle into the temporary grid
-                        temp[indices.x, indices.y, indices.z].Add(this.grid[i, j, k][t]);
-
-                    }
-
-                }
-            }
-        } 
-
-        // Redefining the main grid as the temporary grid to update it
-       this.grid = temp;
+            // Going to the next particle
+            node = node.Next;
+        }
 
     }
 
