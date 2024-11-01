@@ -37,14 +37,9 @@ public class Main : MonoBehaviour {
     // Update is called once per frame
     void Update() {
 
-        // for (int i = 0; i < particles.Count; i++) {
-        //     particles[i].update();
-        //     Particle.fixCollisions(particles);
-        // }
-
         particles.updateAll();
         // TODO update the fixLocations thing to be called by each particle during its update call 
-        particles.fixLocations();
+        // particles.fixLocations();
         particles.fixCollisions();
         
 

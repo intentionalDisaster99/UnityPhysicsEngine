@@ -41,11 +41,11 @@ public class Particle {
     private double dragCoefficient = 0.47;
 
     // The coefficient of restitution, so the bounciness of the particle
-    private double restitution = 0.95;
+    private double restitution = 0.75;
 
     // I am going to treat the particles as springs when correcting their collisions, so we are going to give every particle a spring constant
     // I think of this as in how much the particle doesn't want to compress in on itself
-    private double springConstant = 1000; 
+    private double springConstant = 10000; 
 
     //-------------------------------In Code Variables---------------------------------
 
@@ -60,7 +60,10 @@ public class Particle {
     private (int, int) zBound = (-1, 1);
     private (int, int) yBound = (-1, 1);
 
-    
+    // The location of each particle in the grid container
+    public Vector4 gridLocation = new(-1, -1, -1, -1);
+
+
     //-------------------------------Constructors---------------------------------
     
     // Default constructor
@@ -113,7 +116,7 @@ public class Particle {
     //-------------------------------Public---------------------------------  
 
     // Updating the particle to change the location based on the velocity
-    public void update() {
+    public void update(Grid grid) {
 
         // Adding in gravity
         this.force(Constants.g * this.mass);
@@ -129,6 +132,9 @@ public class Particle {
 
         // Checking to make sure we haven't exited the box we are allowed to be in
         this.checkBoundaries();
+
+        // Checking to make sure that we are still in the same cell
+        grid.fixLocation(this);
 
     } 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
+using System.Linq;
 
 /// <summary>
 /// This is basically just a grid class that I can use to separate the different sections of the world so that 
@@ -93,6 +94,9 @@ public class Grid {
         // Putting the particle in the right place
         this.grid[index.x, index.y, index.z].Add(particle);
 
+        // Making sure that the particle knows its place
+        particle.gridLocation = new Vector4(index.x, index.y, index.z, this.grid[index.x, index.y, index.z].Count - 1);
+
         // Increasing the count 
         this.Count++;
 
@@ -102,7 +106,6 @@ public class Grid {
     }
 
     // A method that will check to see if the particles are in the right place
-    // TODO With the new linked list, I can more quickly just clear the grid and then add in the ones I have saved in the running list
     public void fixLocations() {
 
         // Clearing the list 
@@ -110,17 +113,11 @@ public class Grid {
 
         // Initializing the new grid lists 
         for (int x = 0; x < this.numberOfCells.x; x++) {
-
             for (int y = 0; y < this.numberOfCells.y; y++) {
-
                 for (int z = 0; z < this.numberOfCells.z; z++) {
-
                     this.grid[x, y, z] = new List<Particle>();
-
                 }
-
             }
-
         }
 
         // Pre-allocating the space for the indices
@@ -141,6 +138,34 @@ public class Grid {
         }
 
     }
+
+    // A method that will fix the location of a single particle in the grid
+    // TODO update this method to where it first checks the cell it was last in and then radiates outwards
+    public void fixLocation(Particle particle) {
+
+        // Getting the cell that the particle should be in
+        Vector3Int newLocation = this.getParticleIndex(particle);
+
+        // Checking to see if the particle is in the right cell already
+        if (particle.gridLocation.x == newLocation.x && particle.gridLocation.y == newLocation.y && particle.gridLocation.z == newLocation.z) return;
+
+        // It is in the wrong cell, so first we need to take it out of the cell it is in right now
+        this.grid[(int)particle.gridLocation.x, (int)particle.gridLocation.y, (int)particle.gridLocation.z].RemoveAt((int)particle.gridLocation.w);
+
+        // Now that it is gone, we have to adjust the rest of the particles in that cell to have the right w value
+        for (int i = (int)particle.gridLocation.w; i < this.grid[(int)particle.gridLocation.x, (int)particle.gridLocation.y, (int)particle.gridLocation.z].Count; i++) {
+
+            this.grid[(int)particle.gridLocation.x, (int)particle.gridLocation.y, (int)particle.gridLocation.z][i].gridLocation.w--;
+
+        }
+
+        // Now we have to append it on to the cell it is in now
+        this.grid[(int)newLocation.x, (int)newLocation.y, (int)newLocation.z].Add(particle);
+
+        // Adjusting the gridLocation of the particle so it maps to the right place
+        particle.gridLocation = new Vector4(newLocation.x, newLocation.y, newLocation.z, this.grid[newLocation.x, newLocation.y, newLocation.z].Count - 1);
+        
+    } 
 
     // A simple method to find the indices of a particle in this grid
     public Vector3Int getParticleIndex(Particle particle) {
@@ -219,7 +244,7 @@ public class Grid {
         // There are easier ways to do this, but I want speed
         var node = runningList.First;
         while (node != null) {
-            node.Value.update();
+            node.Value.update(this);
             node = node.Next;
         }
 
@@ -257,6 +282,10 @@ public class Grid {
         // add as an instance variable
         // Finding out how much we need to move it 
         double overlapDepth = one.getRadius() + two.getRadius() - dist;
+
+        // Limiting the overlap distance to make sure that they don't go flying just because they happened to clip into each other
+        overlapDepth = math.clamp(overlapDepth, 0, math.max(one.getRadius(), two.getRadius()));
+
         double3 springForce = 1 / (1 / (one.getSpringConstant()) + 1 / (two.getSpringConstant())) * overlapDepth * normal * 0.98f;
         // (it is the same for the second one, just negative)
 
