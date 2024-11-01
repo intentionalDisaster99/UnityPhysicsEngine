@@ -548,7 +548,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd63c77159cb3f14db367f6edfb130c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfParticles: 50
+  numberOfParticles: 500
   particleSprite: {fileID: 1167654588}
 --- !u!4 &2100758938
 Transform:
